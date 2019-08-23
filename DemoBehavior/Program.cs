@@ -51,6 +51,7 @@ namespace DemoBehavior
     }
 
     public class ExceptionHandlingBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse>
+        where TResponse : CommandResponse
     {
         private readonly IMapper _mapper;
 
@@ -68,6 +69,7 @@ namespace DemoBehavior
             var behaviorModel = _mapper.Map<BehaviorModel>(request);
 
             Console.WriteLine($"ExceptionHandlingBehavior {type.First().FullName} | UniqueKey {lockKey.UniqueKey} | Behavior {behaviorModel.Name}");
+
             return await next();
         }
     }
@@ -121,11 +123,6 @@ namespace DemoBehavior
         {
         }
 
-        public class Command : IRequest<CommandResponse>, ICommand<MessageBody>
-        {
-            public MessageBody Body { get; set; }
-        }
-
         public class CommandHandler : IRequestHandler<Command<MessageBody>, CommandResponse>
         {
             public async Task<CommandResponse> Handle(Command<MessageBody> request, CancellationToken cancellationToken)
@@ -150,11 +147,6 @@ namespace DemoBehavior
     {
         public class MessageBody : BaseMessageBody
         {
-        }
-
-        public class Command : IRequest<CommandResponse>, ICommand<MessageBody>
-        {
-            public MessageBody Body { get; set; }
         }
 
         public class CommandHandler : IRequestHandler<Command<MessageBody>, CommandResponse>
