@@ -41,7 +41,7 @@ namespace DemoBehavior
                 {
                     Body = new DownloadCustomerService.MessageBody
                     {
-                        Name = "Nam Le"
+                        Name = "Anh Le"
                     }
                 });
             }
@@ -51,7 +51,6 @@ namespace DemoBehavior
     }
 
     public class ExceptionHandlingBehavior<TCommand, TResponse> : IPipelineBehavior<TCommand, TResponse>
-    //where TCommand : ICommand<IMessageBody>
     {
         private readonly IMapper _mapper;
 
@@ -64,11 +63,11 @@ namespace DemoBehavior
         {
             var type = request.GetType().GetGenericArguments();
 
-            var lockKey = new LockKey();
+            var lockKey = _mapper.Map<LockKey>(request);
 
-            _mapper.Map(request, lockKey);
+            var behaviorModel = _mapper.Map<BehaviorModel>(request);
 
-            Console.WriteLine($"ExceptionHandlingBehavior {type.First().FullName} | LockKey {lockKey.Name}");
+            Console.WriteLine($"ExceptionHandlingBehavior {type.First().FullName} | UniqueKey {lockKey.UniqueKey} | Behavior {behaviorModel.Name}");
             return await next();
         }
     }
@@ -104,15 +103,15 @@ namespace DemoBehavior
 
     public class LockKey
     {
-        public string Name { get; set; }
+        public string UniqueKey { get; set; }
     }
 
-    public class MappingProfile<T> : Profile where T : BaseMessageBody
+    public abstract class MappingProfile<T> : Profile where T : BaseMessageBody
     {
-        public MappingProfile()
+        protected MappingProfile()
         {
             CreateMap<Command<T>, BehaviorModel>()
-                .ForMember(m => m.Name, o => o.MapFrom(f => f.Body.Name));
+                .ForMember(m => m.Name, o => o.MapFrom(f => f.Body.Name + " Behavior"));
         }
     }
 
@@ -142,7 +141,7 @@ namespace DemoBehavior
             public MappingProfile()
             {
                 CreateMap<Command<MessageBody>, LockKey>()
-                    .ForMember(m => m.Name, o => o.MapFrom(f => f.Body.Name));
+                    .ForMember(m => m.UniqueKey, o => o.MapFrom(f => f.Body.Name + " GetCustomerService"));
             }
         }
     }
@@ -168,12 +167,12 @@ namespace DemoBehavior
             }
         }
 
-        public class MappingProfile : Profile
+        public class MappingProfile : MappingProfile<MessageBody>
         {
             public MappingProfile()
             {
                 CreateMap<Command<DownloadCustomerService.MessageBody>, LockKey>()
-                    .ForMember(m => m.Name, o => o.MapFrom(f => f.Body.Name + " DownloadCustomerService"));
+                    .ForMember(m => m.UniqueKey, o => o.MapFrom(f => f.Body.Name + " DownloadCustomerService"));
             }
         }
     }
