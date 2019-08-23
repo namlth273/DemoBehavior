@@ -1,0 +1,1 @@
+# Demo MediatR's behavior
