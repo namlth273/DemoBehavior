@@ -68,7 +68,7 @@ namespace DemoBehavior
 
             var behaviorModel = _mapper.Map<BehaviorModel>(request);
 
-            Console.WriteLine($"ExceptionHandlingBehavior {type.First().FullName} | UniqueKey {lockKey.UniqueKey} | Behavior {behaviorModel.Name}");
+            Console.WriteLine($"ExceptionHandlingBehavior {type.First().FullName} | UniqueKey {lockKey.UniqueKey} | Behavior {behaviorModel.Body.Name}");
 
             return await next();
         }
@@ -99,7 +99,7 @@ namespace DemoBehavior
 
     }
 
-    public class BehaviorModel : BaseMessageBody
+    public class BehaviorModel : Command<BaseMessageBody>
     {
     }
 
@@ -112,8 +112,7 @@ namespace DemoBehavior
     {
         protected MappingProfile()
         {
-            CreateMap<Command<T>, BehaviorModel>()
-                .ForMember(m => m.Name, o => o.MapFrom(f => f.Body.Name + " Behavior"));
+            CreateMap<Command<T>, BehaviorModel>();
         }
     }
 
